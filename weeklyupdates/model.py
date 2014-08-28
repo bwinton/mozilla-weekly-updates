@@ -150,7 +150,7 @@ def get_teamposts(userid):
                                 WHERE u1.projectname = u2.projectname
                                   AND u1.userid = posts.userid
                                   AND u2.userid = ?)
-                     ORDER BY postdate DESC, posttime DESC''', (userid,))
+                     ORDER BY userid ASC, postdate DESC, posttime DESC''', (userid,))
     posts = [create_post_with_bugs(d) for d in cur.fetchall()]
     return posts
 
@@ -172,7 +172,7 @@ def get_recentposts():
                                      FROM posts AS p2
                                      WHERE p2.userid = posts.userid)
                      AND postdate > ?
-                   ORDER BY postdate DESC, posttime DESC''',
+                   ORDER BY userid ASC, postdate DESC, posttime DESC''',
                 (util.today().toordinal() - 15,))
     posts = [create_post_with_bugs(d) for d in cur.fetchall()]
     return posts
@@ -280,7 +280,7 @@ def get_project_posts(projectname):
                      AND exists (SELECT * from userprojects
                                  WHERE userprojects.userid = posts.userid
                                  AND userprojects.projectname = ?)
-                   ORDER BY postdate DESC, posttime DESC''', (projectname,))
+                   ORDER BY userid ASC, postdate DESC, posttime DESC''', (projectname,))
     posts = [create_post_with_bugs(d) for d in cur.fetchall()]
     return posts
 
@@ -306,7 +306,7 @@ def iter_daily(cur, day):
                                     WHERE u1.projectname = u2.projectname
                                     AND u1.userid = posts.userid
                                     AND u2.userid = ?)
-                       ORDER BY postdate ASC, posttime ASC''',
+                       ORDER BY userid ASC, postdate ASC, posttime ASC''',
                     (day.toordinal(), userid))
         posts = [create_post_with_bugs(r) for r in cur.fetchall()]
         yield userid, email, posts
@@ -323,7 +323,7 @@ def iter_weekly(cur, start, end):
                                     WHERE u1.projectname = u2.projectname
                                     AND u1.userid = posts.userid
                                     AND u2.userid = ?)
-                       ORDER BY postdate ASC, posttime ASC''',
+                       ORDER BY userid ASC, postdate ASC, posttime ASC''',
                     (start.toordinal(), end.toordinal(), userid))
         posts = [create_post_with_bugs(r) for r in cur.fetchall()]
         yield userid, email, posts
