@@ -38,7 +38,7 @@
     </div>
 
     <div class="maincontent">
-      <h3>${userid}</h3>
+      <h3><img class="avatar" src="https://avatars.io/email/${userid}" />${userid}</h3>
 
       <div class="keeptogether">
         <h4>Current Status
@@ -66,6 +66,12 @@
         </h4>
 
         ${postlist(teamposts)}
+
+        <div class="older">
+          <h4>Overdue Team Members</h4>
+          ${userlist(oldposts)}
+        </div>
+
       </div>
     </div>
   </body>

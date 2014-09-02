@@ -57,20 +57,21 @@ class Root(object):
         if loginid is None:
             team = ()
             teamposts = None
+            oldposts = None
             userposts = None
             todaypost = None
             bugs = None
             recent = model.get_recentposts()
         else:
             team = model.get_user_projects(loginid)
-            teamposts = model.get_teamposts(loginid)
+            teamposts, oldposts = model.get_teamposts(loginid)
             userposts, todaypost = model.get_user_posts(loginid)
             bugs = model.get_currentbugs(loginid, iteration)
             recent = None
 
         return render('index.xhtml', projects=projects, recent=recent, team=team, bugs=bugs,
                       iteration=iteration, daysleft=daysleft, teamposts=teamposts, userposts=userposts,
-                      todaypost=todaypost)
+                      todaypost=todaypost, oldposts=oldposts)
 
     @model.requires_db
     def posts(self):
@@ -136,9 +137,9 @@ class Root(object):
         userposts, thispost = model.get_user_posts(userid)
 
         projects = model.get_userprojects(userid)
-        teamposts = model.get_teamposts(userid)
+        teamposts, oldposts = model.get_teamposts(userid)
 
-        return render('user.xhtml', userid=userid, projects=projects,
+        return render('user.xhtml', userid=userid, projects=projects, oldposts=oldposts,
                       teamposts=teamposts, userposts=userposts, team=[])
 
     @model.requires_db
@@ -160,18 +161,18 @@ class Root(object):
 
     @model.requires_db
     def userteamposts(self, userid):
-        teamposts = model.get_teamposts(userid)
+        teamposts, oldposts = model.get_teamposts(userid)
         team = model.get_userteam(userid)
         projects = model.get_projects()
 
         return render('teamposts.xhtml', userid=userid, team=team,
-                      teamposts=teamposts, projects=projects)
+                      teamposts=teamposts, oldposts=oldposts, projects=projects)
 
     @model.requires_db
     def userteampostsfeed(self, userid):
-        teamposts = model.get_teamposts(userid)
+        teamposts, oldposts = model.get_teamposts(userid)
 
-        return renderatom(feedposts=teamposts,
+        return renderatom(feedposts=teamposts + oldposts,
                           feedurl=cherrypy.url('/user/%s/teamposts/feed' % userid),
                           title="Mozilla Status Board Updates: User Team: %s" % userid)
 
@@ -339,18 +340,18 @@ class Root(object):
             raise cherrypy.HTTPError(404, "Project not found")
 
         users = model.get_project_users(projectname)
-        posts = model.get_project_posts(projectname)
+        posts, oldposts = model.get_project_posts(projectname)
         late = model.get_project_late(projectname)
         iteration, daysleft = model.get_current_iteration()
         projects = model.get_projects()
 
         return render('project.xhtml', projectname=projectname, users=users,
                       posts=posts, late=late, team=[projectname], iteration=iteration,
-                      daysleft=daysleft, projects=projects)
+                      daysleft=daysleft, projects=projects, oldposts=oldposts)
 
     @model.requires_db
     def projectfeed(self, projectname):
-        posts = model.get_project_posts(projectname)
+        posts, oldposts = model.get_project_posts(projectname)
 
         return renderatom(feedposts=posts,
                           feedurl=cherrypy.url('/project/%s' % projectname),

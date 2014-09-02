@@ -141,18 +141,35 @@ def get_all_userposts(userid):
 
 def get_teamposts(userid):
     cur = get_cursor()
+
     cur.execute('''SELECT userid, postdate, posttime, completed, planned, tags
                    FROM posts
                    WHERE postdate = (SELECT MAX(postdate)
                                      FROM posts AS p2
                                      WHERE p2.userid = posts.userid)
+                     AND postdate > ?
                      AND EXISTS(SELECT * FROM userprojects AS u1, userprojects AS u2
                                 WHERE u1.projectname = u2.projectname
                                   AND u1.userid = posts.userid
                                   AND u2.userid = ?)
-                     ORDER BY postdate DESC, posttime DESC''', (userid,))
+                     ORDER BY postdate DESC, posttime DESC''', (util.today().toordinal() - 15, userid))
     posts = [create_post_with_bugs(d) for d in cur.fetchall()]
-    return posts
+
+
+    cur.execute('''SELECT userid, postdate, posttime, completed, planned, tags
+                   FROM posts
+                   WHERE postdate = (SELECT MAX(postdate)
+                                     FROM posts AS p2
+                                     WHERE p2.userid = posts.userid)
+                     AND postdate <= ?
+                     AND EXISTS(SELECT * FROM userprojects AS u1, userprojects AS u2
+                                WHERE u1.projectname = u2.projectname
+                                  AND u1.userid = posts.userid
+                                  AND u2.userid = ?)
+                     ORDER BY postdate DESC, posttime DESC''', (util.today().toordinal() - 15, userid))
+    oldposts = [create_post_with_bugs(d) for d in cur.fetchall()]
+
+    return posts, oldposts
 
 def get_feedposts():
     cur = get_cursor()
@@ -277,12 +294,26 @@ def get_project_posts(projectname):
                    WHERE postdate = (SELECT MAX(postdate)
                                      FROM posts AS p2
                                      WHERE p2.userid = posts.userid)
+                     AND postdate > ?
                      AND exists (SELECT * from userprojects
                                  WHERE userprojects.userid = posts.userid
                                  AND userprojects.projectname = ?)
-                   ORDER BY postdate DESC, posttime DESC''', (projectname,))
+                   ORDER BY postdate DESC, posttime DESC''', (util.today().toordinal() - 15, projectname))
     posts = [create_post_with_bugs(d) for d in cur.fetchall()]
-    return posts
+
+    cur.execute('''SELECT userid, postdate, posttime, completed, planned, tags
+                   FROM posts
+                   WHERE postdate = (SELECT MAX(postdate)
+                                     FROM posts AS p2
+                                     WHERE p2.userid = posts.userid)
+                     AND postdate <= ?
+                     AND exists (SELECT * from userprojects
+                                 WHERE userprojects.userid = posts.userid
+                                 AND userprojects.projectname = ?)
+                     ORDER BY postdate DESC, posttime DESC''', (util.today().toordinal() - 15, projectname))
+    oldposts = [create_post_with_bugs(d) for d in cur.fetchall()]
+
+    return posts, oldposts
 
 def get_naglist(cur):
     cur.execute('''SELECT users.userid, IFNULL(email, users.userid), MAX(postdate) AS lastpostdate

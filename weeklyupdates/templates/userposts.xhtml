@@ -35,7 +35,8 @@
       </py:if>
     </div>
     <div class="maincontent">
-      <h3>${userid}: All Posts</h3>
+      <h3><a href="${genlink('user', userid)}">
+          <img class="avatar" src="https://avatars.io/email/${userid}" />${userid}</a>: All Posts</h3>
 
       ${postlist(posts, showuser=False)}
     </div>

@@ -318,3 +318,8 @@ textarea {
   margin: 5px 15px;
   background-color: #C9F2E7;
 }
+
+.older {
+  opacity: 0.6;
+  margin-top: 2em;
+}

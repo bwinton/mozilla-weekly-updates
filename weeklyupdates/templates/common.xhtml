@@ -78,6 +78,13 @@ import json
           </small>
         </h4>
 
+        <h4 py:if="not showuser" class="postuser">
+          <small py:if="showdate" class="pull-right" title="Posted on ${post.postdate.isoformat()}">
+            <span class="glyphicon glyphicon-time"></span>
+            ${human.date(post.postdate, asdays=True)}
+          </small>
+        </h4>
+
         <div class="postdata">
           <div py:if="post.bugs">
             <h4 class="posthead">Bugs:</h4>
@@ -117,6 +124,15 @@ import json
     <py:for each="post in posts">
       ${postdetail(post, showuser=showuser, cssclass='postlistdetail')}
     </py:for>
+  </div>
+
+  <div py:def="userlist(posts)" class="userlist">
+    <ul>
+    <py:for each="post in posts">
+      <li><a href="${genlink('user', post.userid)}">${post.userid}</a> -
+        <span title="Posted on ${post.postdate.isoformat()}">${human.date(post.postdate, asdays=True)}</span></li>
+    </py:for>
+    </ul>
   </div>
 
   <div py:def="loginform()">
